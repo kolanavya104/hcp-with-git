@@ -62,7 +62,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: kolanavya104/webapp:${{ github.sha }}
+          tags: navyakola104/webapp:${{ github.sha }}
 
       
       - name: Deploy to EC2
