@@ -1,7 +1,6 @@
 data "aws_instance" "existing" {
   instance_id = "i-0acd01c55ad762386"
 }
-
 output "instance_details" {
   value = {
     instance_id         = data.aws_instance.existing.id
