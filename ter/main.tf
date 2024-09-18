@@ -10,7 +10,7 @@ resource "aws_vpc" "new_vpc" {
   enable_dns_hostnames = true   # Ensure DNS hostnames are enabled
 
   tags = {
-    Name = "MyNewVPC"
+    Name = "MyVPC"
   }
 }
 
@@ -22,7 +22,7 @@ resource "aws_subnet" "new_subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "MyNewSubnet"
+    Name = "MySubnet"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_internet_gateway" "new_igw" {
   vpc_id = aws_vpc.new_vpc.id
 
   tags = {
-    Name = "MyInternetGateway"
+    Name = "MyIntGateway"
   }
 }
 
@@ -46,7 +46,7 @@ resource "aws_route_table" "new_route_table" {
   }
 
   tags = {
-    Name = "MyRouteTable"
+    Name = "MyRoutTable"
   }
 }
 
@@ -102,6 +102,6 @@ resource "aws_instance" "new_instance" {
   availability_zone      = "us-east-1a"
 
   tags = {
-    Name = "MyEC2Instance"
+    Name = "MyEC2instance"
   }
 }
