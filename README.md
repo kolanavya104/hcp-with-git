@@ -1,4 +1,10 @@
 GITHUB ACTIONS WITH DOCKER, EC2 AND TERRAFORM
+
+
+
+
+
+
 Open aws cli
 Connect the ec2 instance to ssh
 	ssh -i </path/to/your-key.pem> <user-name>@<your-instance-public-ip>
@@ -40,7 +46,7 @@ Result
 Now the last thing is to check output.
 You should see the output in two urls. They are
 Public IPv4 DNS
-Ex : http://ec2-........compute-1.amazonaws.com/
+Ex : http://ec2-18-205-57-167.compute-1.amazonaws.com
 
 Port no 80
 http://<EC2_PUBLIC_IP>:<PORT>
