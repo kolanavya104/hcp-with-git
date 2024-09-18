@@ -13,7 +13,7 @@ variable "subnet_id" {
 variable "security_group_id" {
   description = "The ID of the existing security group"
   type        = string
-  default     = "sg-0bbc5e6ba111a1bbf"
+  default     = "sg-0f8821292ea412626"
 }
 
 variable "availability_zone" {
@@ -31,5 +31,5 @@ variable "instance_type" {
 variable "ami" {
   description = "The AMI to use for the EC2 instance"
   type        = string
-  default     = "ami-0182f373e66f89c85"
+  default     = "ami-0e86e20dae9224db8"
 }
