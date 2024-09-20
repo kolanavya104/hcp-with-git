@@ -13,6 +13,7 @@ Connect the ec2 instance to ssh
 	Amazon Linux: ec2-user
 Ubuntu: ubuntu
 Replace public ip
+
 Check docker version #obviously docker is not installed
 Update sudo apt-get update 
 Install docker sudo apt install docker -y
