@@ -5,7 +5,7 @@ on:
       - main
 
 env:
-  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_CLOUD_ORGANIZATION: "Kansocloud"
   TF_WORKSPACE: "hcp-with-git"
   CONFIG_DIRECTORY: "./"
