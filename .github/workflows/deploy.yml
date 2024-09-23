@@ -30,9 +30,14 @@ jobs:
           aws-region: 'us-east-1'  # Change to your preferred AWS region
 
       
+      # - name: Terraform Init
+      #   run: terraform init
+      #   working-directory: terraform/
       - name: Terraform Init
-        run: terraform init
-        working-directory: terraform/
+        run: terraform init -backend-config="token=${{ env.TF_API_TOKEN }}"
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
 
       
       - name: Terraform Apply
