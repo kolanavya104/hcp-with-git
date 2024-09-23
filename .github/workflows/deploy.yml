@@ -7,9 +7,8 @@ on:
 
 env:
   TF_CLOUD_ORGANIZATION: "Kansocloud"
-  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
   TF_WORKSPACE: "dockerapp"
-  CONFIG_DIRECTORY: "./terraform"  # Update this if your terraform files are in the "terraform/" folder
+  CONFIG_DIRECTORY: "./terraform"  # Update to the directory where your Terraform files are
 
 jobs:
   terraform:
@@ -25,6 +24,11 @@ jobs:
         with:
           terraform_version: 1.0.0
 
+      - name: Set Terraform Cloud Token
+        run: echo "credentials \"app.terraform.io\" { token = \"$TF_API_TOKEN\" }" > ~/.terraformrc
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}  # Pass the API token as environment variable
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -34,7 +38,7 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ env.CONFIG_DIRECTORY }}  # Points to where your .tf files are
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
