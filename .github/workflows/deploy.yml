@@ -26,7 +26,7 @@ jobs:
 
       - name: Configure HCP and Retrieve Secrets
         env:
-          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}  # HCP token containing all secrets
+          TF_API_TOKEN: ${{ env.TF_API_TOKEN }}  # HCP token containing all secrets
         run: |
           echo "Fetching secrets from HCP..."
           export AWS_ACCESS_KEY_ID=$(hcp variable get AWS_ACCESS_KEY_ID)
