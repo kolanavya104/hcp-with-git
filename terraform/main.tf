@@ -1,9 +1,9 @@
-terraform {
-  backend "remote" {
-    organization = "Kansocloud"
+#terraform {
+#  backend "remote" {
+ #   organization = "Kansocloud"
 
-    workspaces {
-      name = "dockerapp"
-    }
-  }
-}
+  #  workspaces {
+   #   name = "dockerapp"
+    #}
+  #}
+#}
