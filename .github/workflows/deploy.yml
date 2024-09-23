@@ -1,14 +1,9 @@
 name: Docker CI/CD Pipeline
+
 on:
   push:
     branches:
       - main
-
-env:
-  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_CLOUD_ORGANIZATION: "Kansocloud"
-  TF_WORKSPACE: "hcp-with-git"
-  CONFIG_DIRECTORY: "./"
 
 jobs:
   terraform:
@@ -16,51 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+     
       - name: Checkout code
         uses: actions/checkout@v3
 
+      
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.0
 
-      - name: Configure HCP and Retrieve Secrets
-        env:
-          TF_API_TOKEN: ${{ env.TF_API_TOKEN }}  # HCP token containing all secrets
-        run: |
-          echo "Fetching secrets from HCP..."
-          export AWS_ACCESS_KEY_ID=$(hcp variable get AWS_ACCESS_KEY_ID)
-          export AWS_SECRET_ACCESS_KEY=$(hcp variable get AWS_SECRET_ACCESS_KEY)
-          export DOCKER_USERNAME=$(hcp variable get DOCKER_USERNAME)
-          export DOCKER_PASSWORD=$(hcp variable get DOCKER_PASSWORD)
-          export EC2_HOST=$(hcp variable get EC2_HOST)
-          export EC2_USERNAME=$(hcp variable get EC2_USERNAME)
-
-          # Set these values in the GitHub Actions environment
-          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
-          echo "DOCKER_USERNAME=${DOCKER_USERNAME}" >> $GITHUB_ENV
-          echo "DOCKER_PASSWORD=${DOCKER_PASSWORD}" >> $GITHUB_ENV
-          echo "EC2_HOST=${EC2_HOST}" >> $GITHUB_ENV
-          echo "EC2_USERNAME=${EC2_USERNAME}" >> $GITHUB_ENV
-
+     
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'  # Change to your preferred AWS region
 
+      
       - name: Terraform Init
-        run: terraform init -backend-config="organization=${{ env.TF_CLOUD_ORGANIZATION }}" \
-                             -backend-config="token=${{ secrets.TF_API_TOKEN }}" \
-                             -backend-config="workspace=${{ env.TF_WORKSPACE }}"
+        run: terraform init
         working-directory: terraform/
 
-      - name: Select Terraform Workspace
-        run: terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
-        working-directory: ${{ env.CONFIG_DIRECTORY }}
-
+      
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: terraform/
@@ -71,15 +45,18 @@ jobs:
     needs: terraform
 
     steps:
+      
       - name: Checkout code
         uses: actions/checkout@v3
 
+      
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ env.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+     
       - name: Build Docker Image
         uses: docker/build-push-action@v2
         with:
@@ -87,13 +64,15 @@ jobs:
           push: true
           tags: navyakola104/webapp:${{ github.sha }}
 
+      
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USERNAME }} # Ensure your private key is set in GitHub secrets
+          host: ${{ secrets.EC2_HOST }}  # Ensure this points to your existing EC2 instance
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             docker stop webapp || true
             docker rm webapp || true
-            docker pull ${{ env.DOCKER_USERNAME }}/webapp:${{ github.sha }}
-            docker run -d --name webapp -p 80:80 ${{ env.DOCKER_USERNAME }}/webapp:${{ github.sha }}
+            docker pull ${{ secrets.DOCKER_USERNAME }}/webapp:${{ github.sha }}
+            docker run -d --name webapp -p 80:80 ${{ secrets.DOCKER_USERNAME }}/webapp:${{ github.sha }}
