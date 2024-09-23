@@ -91,8 +91,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}  # Ensure your private key is set in GitHub secrets
+          username: ${{ env.EC2_USERNAME }} # Ensure your private key is set in GitHub secrets
           script: |
             docker stop webapp || true
             docker rm webapp || true
