@@ -5,39 +5,40 @@ on:
     branches:
       - main
 
+env:
+  TF_CLOUD_ORGANIZATION: "Kansocloud"
+  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+  TF_WORKSPACE: "dockerapp"
+  CONFIG_DIRECTORY: "./terraform"  # Update this if your terraform files are in the "terraform/" folder
+
 jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
 
     steps:
-     
       - name: Checkout code
         uses: actions/checkout@v3
 
-      
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.0
 
-     
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'  # Change to your preferred AWS region
+          aws-region: 'us-east-1'
 
-      
       - name: Terraform Init
         run: terraform init
-        working-directory: terraform/
+        working-directory: ${{ env.CONFIG_DIRECTORY }}  # Points to where your .tf files are
 
-      
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: terraform/
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
 
   build_and_deploy:
     name: Build and Deploy Docker Image
@@ -45,18 +46,15 @@ jobs:
     needs: terraform
 
     steps:
-      
       - name: Checkout code
         uses: actions/checkout@v3
 
-      
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-     
       - name: Build Docker Image
         uses: docker/build-push-action@v2
         with:
@@ -64,13 +62,11 @@ jobs:
           push: true
           tags: navyakola104/webapp:${{ github.sha }}
 
-      
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}  # Ensure this points to your existing EC2 instance
+          host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             docker stop webapp || true
             docker rm webapp || true
