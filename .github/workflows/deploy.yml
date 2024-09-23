@@ -7,8 +7,9 @@ on:
 
 env:
   TF_CLOUD_ORGANIZATION: "Kansocloud"
+  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
   TF_WORKSPACE: "dockerapp"
-  CONFIG_DIRECTORY: "./terraform"  # Update to the directory where your Terraform files are
+  CONFIG_DIRECTORY: "./"
 
 jobs:
   terraform:
@@ -24,17 +25,12 @@ jobs:
         with:
           terraform_version: 1.0.0
 
-      - name: Set Terraform Cloud Token
-        run: echo "credentials \"app.terraform.io\" { token = \"$TF_API_TOKEN\" }" > ~/.terraformrc
-        env:
-          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}  # Pass the API token as environment variable
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'
+          aws-region: 'us-east-1'  # Change to your preferred AWS region
 
       - name: Terraform Init
         run: terraform init
@@ -69,7 +65,7 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}  # Ensure this points to your existing EC2 instance
           username: ${{ secrets.EC2_USERNAME }}
           script: |
             docker stop webapp || true
