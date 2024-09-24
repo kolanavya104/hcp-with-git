@@ -5,48 +5,46 @@ on:
     branches:
       - main
 
+env:
+  TF_CLOUD_ORGANIZATION: "Kansocloud"
+  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}  # Ensure this is set in GitHub secrets
+  TF_WORKSPACE: "hcp-with-git"  # Updated workspace name
+  CONFIG_DIRECTORY: "./"  # Directory containing your Terraform configuration
+
 jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
 
     steps:
-     
       - name: Checkout code
         uses: actions/checkout@v3
 
-      
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.0
 
-     
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}  # Ensure these are set in tcp cloud environment variables
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1'  # Change to your preferred AWS region
 
-      
-      # - name: Terraform Init
-      #   run: terraform init
-      #   working-directory: terraform/
       - name: Terraform Init
-        run: terraform init -backend-config="token=${{ env.TF_API_TOKEN }}"
-        env:
-          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+        run: terraform init -backend-config="organization=${{ env.TF_CLOUD_ORGANIZATION }}" \
+                             -backend-config="token=${{ secrets.TF_API_TOKEN }}" \
+                             -backend-config="workspace=${{ env.TF_WORKSPACE }}"
         working-directory: ${{ env.CONFIG_DIRECTORY }}
-        
-      - name: Terraform Config
-        run: terraform init -reconfigure
-        working-directory: terraform/
-        
-        
+
+      - name: Select Terraform Workspace
+        run: terraform workspace select ${{ env.TF_WORKSPACE }} || terraform workspace new ${{ env.TF_WORKSPACE }}
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
+
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: terraform/
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
 
   build_and_deploy:
     name: Build and Deploy Docker Image
@@ -54,18 +52,15 @@ jobs:
     needs: terraform
 
     steps:
-      
       - name: Checkout code
         uses: actions/checkout@v3
 
-      
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.DOCKER_USERNAME }}  # Ensure these are set in tcp cloud environment varaiables
+          password: ${{ env.DOCKER_PASSWORD }}
 
-     
       - name: Build Docker Image
         uses: docker/build-push-action@v2
         with:
@@ -73,15 +68,14 @@ jobs:
           push: true
           tags: navyakola104/webapp:${{ github.sha }}
 
-      
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}  # Ensure this points to your existing EC2 instance
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          host: ${{ env.EC2_HOST }}  # Ensure this points to your existing EC2 instance
+          username: ${{ env.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}  # Ensure your private key is set in GitHub secrets
           script: |
             docker stop webapp || true
             docker rm webapp || true
-            docker pull ${{ secrets.DOCKER_USERNAME }}/webapp:${{ github.sha }}
-            docker run -d --name webapp -p 80:80 ${{ secrets.DOCKER_USERNAME }}/webapp:${{ github.sha }}
+            docker pull ${{ senv.DOCKER_USERNAME }}/webapp:${{ github.sha }}
+            docker run -d --name webapp -p 80:80 ${{ env.DOCKER_USERNAME }}/webapp:${{ github.sha }}
