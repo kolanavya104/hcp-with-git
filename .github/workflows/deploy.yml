@@ -20,14 +20,14 @@ jobs:
           
           # Attempt to get the AWS credentials
           AWS_ACCESS_KEY_ID=$(terraform output -raw aws_access_key_id 2>&1)
-          if [ $? -ne 0 ]; then
-            echo "Error retrieving AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
+          if [[ "$AWS_ACCESS_KEY_ID" == "│ Warning: No outputs found" ]]; then
+            echo "No output found for AWS_ACCESS_KEY_ID."
             exit 1
           fi
           
           AWS_SECRET_ACCESS_KEY=$(terraform output -raw aws_secret_access_key 2>&1)
-          if [ $? -ne 0 ]; then
-            echo "Error retrieving AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
+          if [[ "$AWS_SECRET_ACCESS_KEY" == "│ Warning: No outputs found" ]]; then
+            echo "No output found for AWS_SECRET_ACCESS_KEY."
             exit 1
           fi
 
