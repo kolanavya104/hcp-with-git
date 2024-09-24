@@ -1,9 +1,9 @@
 terraform {
   backend "remote" {
-    organization = "Kansocloud"
+    organization = "KansoCloud"
 
     workspaces {
-      name = "dockerapp"
+      name = "hcp-with-git"
     }
   }
 }
