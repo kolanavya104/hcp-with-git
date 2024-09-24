@@ -77,5 +77,5 @@ jobs:
           script: |
             docker stop webapp || true
             docker rm webapp || true
-            docker pull ${{ senv.DOCKER_USERNAME }}/webapp:${{ github.sha }}
+            docker pull ${{ env.DOCKER_USERNAME }}/webapp:${{ github.sha }}
             docker run -d --name webapp -p 80:80 ${{ env.DOCKER_USERNAME }}/webapp:${{ github.sha }}
