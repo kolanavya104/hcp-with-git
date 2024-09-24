@@ -41,6 +41,7 @@ jobs:
 
       
       - name: Terraform Apply
+        run: terraform init -reconfigure
         run: terraform apply -auto-approve
         working-directory: terraform/
 
